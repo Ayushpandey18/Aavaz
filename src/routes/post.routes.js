@@ -1,0 +1,10 @@
+import { createPost, deletePost, getPostById, updatePost } from "../controllers/post.controller.js";
+import { Router } from "express";
+const postRouter=Router();
+import verifyJWT from "../middlewares/Auth.middleware.js";
+import { uploadMultiple } from "../middlewares/multer.middleware.js";
+postRouter.route("/create").post(verifyJWT,uploadMultiple("Medias"),createPost);
+postRouter.route("/getbyid/:id").get(getPostById);
+postRouter.route("/update/:id").post(verifyJWT,updatePost);
+postRouter.route("/delete/:id").post(verifyJWT,deletePost);
+export default postRouter; 

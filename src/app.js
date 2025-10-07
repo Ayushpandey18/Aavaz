@@ -54,8 +54,10 @@ app.use((err, req, res, next) => {
 import userRouter from "./routes/auth.routes.js";
 import locationRouter from "./routes/location.routes.js"
 import postRouter from "./routes/post.routes.js";
+import followrouter from "./routes/follow.routes.js";
 app.use("/api/auth", userRouter);
 app.use("/api/location",locationRouter);
 app.use("/api/posts",postRouter);
+app.use("/api/follows",followrouter);
  app.use(errorHandler)
 export default app;

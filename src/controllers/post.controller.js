@@ -67,9 +67,8 @@ if (req.files && req.files.length > 0) {
       .json(new apiresponse(200, "Post fetched (cache)", JSON.parse(cachedPost)));
   }
     const post = await Post.findById(id).populate("author", "username name");
-    await redis.setex(`post:${id}`, 600, JSON.stringify(post));
     if (!post) throw new apierror( "Post not found",404);
-  
+    await redis.setex(`post:${id}`, 600, JSON.stringify(post));
     return res
       .status(200)
       .json(new apiresponse(200,"Post fetched successfully", post));

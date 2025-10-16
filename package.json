@@ -4,10 +4,11 @@
   "description": "",
   "type": "module",
   "main": "index.js",
-  "scripts": {
-    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
-    "start": "node src/index.js"
-  },
+ "scripts": {
+  "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
+  "start": "node src/index.js",
+  "workers": "node -r dotenv/config src/workers/index.worker.js"
+},
   "author": "",
   "license": "ISC",
   "dependencies": {

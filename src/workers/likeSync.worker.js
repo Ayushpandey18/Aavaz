@@ -1,7 +1,7 @@
 // src/workers/likeSync.worker.js
 import mongoose from "mongoose";
 import Post from "../models/post.model.js";
-import redis from "../utils/redisClient.js";
+import redis from "../Utils/redisclient.js";
 
 const FLUSH_INTERVAL_MS = 5000;
 const BATCH_SIZE = 20;
@@ -15,7 +15,6 @@ async function flushLikeCounts() {
   try {
     const all = await redis.hgetall("post:likecount");
     const entries = Object.entries(all);
-
     if (!entries.length) return;
 
     for (let i = 0; i < entries.length; i += BATCH_SIZE) {
@@ -45,3 +44,4 @@ export function startLikeSyncWorker() {
   setInterval(flushLikeCounts, FLUSH_INTERVAL_MS);
   flushLikeCounts().catch((err) => console.error(" Initial flush error:", err));
 }
+startLikeSyncWorker();

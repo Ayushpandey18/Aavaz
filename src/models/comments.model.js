@@ -7,6 +7,7 @@ const commentSchema = new Schema({
   content: { type: String, required: true, trim: true },
   parent: { type: Schema.Types.ObjectId, ref: "Comment", default: null }, // null = top-level comment
   likeCount: { type: Number, default: 0 },
+  isDeleted: { type: Boolean, default: false },
 }, { timestamps: true });
 
 // Indexes

@@ -1,4 +1,4 @@
-import { createPost, deletePost, getPostById, updatePost } from "../controllers/post.controller.js";
+import { allposts, createPost, deletePost, getPostById, updatePost,getPostsByUser,getPostsByTag } from "../controllers/post.controller.js";
 import { Router } from "express";
 const postRouter=Router();
 import verifyJWT from "../middlewares/Auth.middleware.js";
@@ -7,4 +7,7 @@ postRouter.route("/create").post(verifyJWT,uploadMultiple("Medias"),createPost);
 postRouter.route("/getbyid/:id").get(getPostById);
 postRouter.route("/update/:id").post(verifyJWT,updatePost);
 postRouter.route("/delete/:id").post(verifyJWT,deletePost);
+postRouter.route("/getall").get(allposts);
+postRouter.get("/user/:username", getPostsByUser);
+postRouter.get("/tag/:tag", getPostsByTag);
 export default postRouter; 

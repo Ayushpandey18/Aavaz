@@ -6,5 +6,8 @@ const redis = new Redis({
 
 redis.on('connect', () => console.log('Connected to Redis via Unix socket'));
 redis.on('error', (err) => console.error('Redis error:', err));
+export const redisConnection = {
+  path: "/tmp/redis/redis.sock",
+};
 
 export default redis;

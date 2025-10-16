@@ -1,0 +1,10 @@
+import { Router } from "express";
+import { createComment,updateComment,deleteComment, getTopCommentsByPost, getRepliesByComment } from "../controllers/comments.controller.js";
+import verifyJWT from "../middlewares/Auth.middleware.js";
+const commentRouter=Router();
+commentRouter.route("/create").post(verifyJWT,createComment);
+commentRouter.route("/update/:commentId").patch(verifyJWT,updateComment);
+commentRouter.route("/delete/:commentId").delete(verifyJWT,deleteComment);
+commentRouter.route("/getbypost/:postId").get(getTopCommentsByPost);
+commentRouter.route("/getbycomment/:commentId").get(getRepliesByComment);
+export default commentRouter;

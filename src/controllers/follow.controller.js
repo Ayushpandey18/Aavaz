@@ -4,6 +4,7 @@ import Follow from "../models/follow.model.js";
 import {apiresponse} from "../Utils/apiresponse.js";
 import apierror from "../Utils/apierror.js";
 import redis from "../Utils/redisclient.js";
+import { notificationQueue } from "../queues/notificationQueue.js";
 
 /**
  * Follow a user
@@ -41,7 +42,11 @@ export const followUser = async (req, res) => {
         follower.followingCount = (follower.followingCount || 0) + 1;
   
         await Promise.all([followee.save({ session }), follower.save({ session })]);
-  
+        await notificationQueue.add("new-follow", {
+      user: followeeId,   // post owner gets the notification
+      actor: followerId,       // the commenter
+      type: "follow",
+    });
         // Cache invalidation
         await redis.del(`user:${followee.username}`);
         await redis.del(`user:${follower.username}`);
@@ -123,7 +128,7 @@ export const getFollowers = async (req, res) => {
   const followers = await Follow.find({ followee: user._id })
     .skip(skip)
     .limit(Number(limit))
-    .populate("follower", "username avatarUrl bio followerCount followingCount");
+    .populate("follower", "username avatarUrl bio followerCount followingCount _id");
 
   const data = followers.map(f => f.follower);
 
@@ -152,7 +157,7 @@ export const getFollowing = async (req, res) => {
   const following = await Follow.find({ follower: user._id })
     .skip(skip)
     .limit(Number(limit))
-    .populate("followee", "username avatarUrl bio followerCount followingCount");
+    .populate("followee", "username avatarUrl bio followerCount followingCount _id");
 
   const data = following.map(f => f.followee);
 
@@ -160,3 +165,14 @@ export const getFollowing = async (req, res) => {
 
   return res.json(new apiresponse(200,"OK", data ));
 };
+export const checkFollowing = asyncHandler(async (req, res) => {
+  const userA = req.user._id;
+  const userB = req.params.id;
+
+  if (userA.toString() === userB) {
+    return res.status(200).json(new apiresponse(200, "Users are the same", { following: false }));
+  }
+
+  const exists = await Follow.exists({ follower: userA, followee: userB });
+  res.status(200).json(new apiresponse(200, "Follow check completed", { following: !!exists }));
+});

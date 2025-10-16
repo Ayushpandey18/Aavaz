@@ -5,6 +5,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import apiLimiter from "./middlewares/ratelimiter.js";
 import errorHandler from "./middlewares/error.middleware.js";
+import { feedworker } from "./workers/feedWorker.js";
+import { notificationWorker } from "./workers/notificationworker.js";
 const app = express();
 
 // Validate essential environment variable
@@ -55,9 +57,17 @@ import userRouter from "./routes/auth.routes.js";
 import locationRouter from "./routes/location.routes.js"
 import postRouter from "./routes/post.routes.js";
 import followrouter from "./routes/follow.routes.js";
+import likeRouter from "./routes/like.routes.js";
+import commentRouter from "./routes/comment.routes.js";
+import feedrouter from "./routes/feed.routes.js";
+import notificationrouter from "./routes/notification.routes.js";
 app.use("/api/auth", userRouter);
 app.use("/api/location",locationRouter);
 app.use("/api/posts",postRouter);
 app.use("/api/follows",followrouter);
+app.use("/api/likes",likeRouter);
+app.use("/api/comments",commentRouter);
+app.use("/api/feed",feedrouter);
+app.use("/api/notification",notificationrouter);
  app.use(errorHandler)
 export default app;

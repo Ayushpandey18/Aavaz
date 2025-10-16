@@ -2,6 +2,7 @@ import asyncHandler from "../Utils/asyncHandler.js";
 import {apiresponse} from "../Utils/apiresponse.js";
 import apierror from "../Utils/apierror.js";
 import Post from "../models/post.model.js";
+import User from "../models/user.model.js"
 import { uploadMultipleOnCloudinary,deleteFromCloudinary,deleteMultipleFromCloudinary } from "../Utils/cloudinary.js";
 import redis from "../Utils/redisclient.js";
 export const createPost = asyncHandler(async (req, res) => {
@@ -121,5 +122,66 @@ if (req.files && req.files.length > 0) {
       .status(200)
       .json(new apiresponse(200,"Post deleted successfully",{}));
   });
-  
-  
+  export const allposts=asyncHandler(async(req,res)=>{
+    const posts=await Post.find({});
+    if(!posts) throw new apierror("No posts found",404)
+      return res.status(200).json(new apiresponse(200,"Posts fetched successfully",posts))
+  })
+  const POSTS_CACHE_PREFIX = "posts:";
+  const PAGE_SIZE = 50;
+
+// 🔹 Get posts by username
+export const getPostsByUser = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const cacheKey = `${POSTS_CACHE_PREFIX}user:${username}:page:${page}`;
+
+  // Try Redis cache
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    return res
+      .status(200)
+      .json(new apiresponse(200, `Posts by ${username} (cached)`, JSON.parse(cached)));
+  }
+
+  // Get user
+  const user = await User.findOne({ username });
+  if (!user) throw new apierror("User not found", 404);
+
+  // Fetch posts with pagination
+  const posts = await Post.find({ author: user._id })
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * PAGE_SIZE)
+    .limit(PAGE_SIZE)
+    .lean();
+
+  // Store in Redis
+  await redis.set(cacheKey, JSON.stringify(posts), "EX", 60 * 5); // 5 min TTL
+
+  res.status(200).json(new apiresponse(200, `Posts by ${username}`, posts));
+});
+// 🔹 Get posts by tag
+export const getPostsByTag = asyncHandler(async (req, res) => {
+  const { tag } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const cacheKey = `${POSTS_CACHE_PREFIX}tag:${tag.toLowerCase()}:page:${page}`;
+
+  // Try Redis cache
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    return res
+      .status(200)
+      .json(new apiresponse(200, `Posts with tag #${tag} (cached)`, JSON.parse(cached)));
+  }
+
+  const posts = await Post.find({ tags: { $in: [tag.toLowerCase()] } })
+    .populate("author","username name _id")
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * PAGE_SIZE)
+    .limit(PAGE_SIZE)
+    .lean();
+
+  await redis.set(cacheKey, JSON.stringify(posts), "EX", 60 * 5); // 5 min TTL
+
+  res.status(200).json(new apiresponse(200, `Posts with tag #${tag}`, posts));
+});

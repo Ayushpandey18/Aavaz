@@ -5,8 +5,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import apiLimiter from "./middlewares/ratelimiter.js";
 import errorHandler from "./middlewares/error.middleware.js";
-import { feedworker } from "./workers/feedWorker.js";
-import { notificationWorker } from "./workers/notificationworker.js";
+// import { feedworker } from "./workers/feedWorker.js";
+// import { notificationWorker } from "./workers/notificationworker.js";
 const app = express();
 
 // Validate essential environment variable

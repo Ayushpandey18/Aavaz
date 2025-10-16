@@ -165,7 +165,7 @@ export const getFollowing = async (req, res) => {
 
   return res.json(new apiresponse(200,"OK", data ));
 };
-export const checkFollowing = asyncHandler(async (req, res) => {
+export const checkFollowing = async (req, res) => {
   const userA = req.user._id;
   const userB = req.params.id;
 
@@ -175,4 +175,4 @@ export const checkFollowing = asyncHandler(async (req, res) => {
 
   const exists = await Follow.exists({ follower: userA, followee: userB });
   res.status(200).json(new apiresponse(200, "Follow check completed", { following: !!exists }));
-});
+};

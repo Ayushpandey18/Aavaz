@@ -1,7 +1,7 @@
 import connect_db from "./DB/index.js";
 import dotenv from 'dotenv';
 import app from "./app.js";
-import { startLikeSyncWorker } from "./workers/likeSync.worker.js";
+
 
 dotenv.config({ path: './.env' });
 
@@ -12,7 +12,6 @@ connect_db()
     console.log("Connected to database");
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`)
-      startLikeSyncWorker();
     });
   })
   .catch(err => {

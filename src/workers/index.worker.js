@@ -2,10 +2,15 @@
 import { feedworker } from "./feedWorker.js";
 import { notificationWorker } from "./notificationworker.js";
 import { startLikeSyncWorker } from "./likeSync.worker.js";
-
+import connect_db from "../DB/index.js";
 const ENV = process.env.NODE_ENV || "development";
 const VERBOSE = ENV !== "production";
-
+try {
+  await connect_db();
+} catch (err) {
+  console.error("❌ MongoDB connection error:", err);
+  process.exit(1);
+}
 // --------------------------------------------------
 // Start Workers
 // --------------------------------------------------

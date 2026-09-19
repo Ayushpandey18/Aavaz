@@ -1,21 +1,24 @@
-
 import { feedworker } from "./feedWorker.js";
 import { notificationWorker } from "./notificationworker.js";
 import { startLikeSyncWorker } from "./likeSync.worker.js";
 import connect_db from "../DB/index.js";
+
 const ENV = process.env.NODE_ENV || "development";
 const VERBOSE = ENV !== "production";
+
 try {
   await connect_db();
+  console.log("✅ MongoDB connected for workers");
 } catch (err) {
   console.error("❌ MongoDB connection error:", err);
   process.exit(1);
 }
+
 // --------------------------------------------------
 // Start Workers
 // --------------------------------------------------
 
-const likeSyncWorker = startLikeSyncWorker();
+
 
 // --------------------------------------------------
 // Keep Track of Stats
@@ -24,6 +27,8 @@ const likeSyncWorker = startLikeSyncWorker();
 let feedJobsProcessed = 0;
 let notifJobsProcessed = 0;
 let likeSyncJobsProcessed = 0;
+
+const likeSyncWorker = startLikeSyncWorker()
 
 // --------------------------------------------------
 // Feed Worker Events
@@ -58,36 +63,17 @@ notificationWorker.on("failed", (job, err) => {
 });
 
 // --------------------------------------------------
-// Like Sync Worker Events
-// --------------------------------------------------
-
-if (likeSyncWorker) {
-  likeSyncWorker.on("completed", (job) => {
-    likeSyncJobsProcessed++;
-
-    if (VERBOSE) {
-      console.log(`❤️ Like sync job completed: ${job.id}`);
-    }
-  });
-
-  likeSyncWorker.on("failed", (job, err) => {
-    console.error(`❌ Like sync job failed: ${job?.id}`, err);
-  });
-}
-
-// --------------------------------------------------
 // Periodic Stats
 // --------------------------------------------------
 
 if (VERBOSE) {
   setInterval(() => {
     console.log(
-      `📈 Stats: Feed=${feedJobsProcessed}, Notification=${notifJobsProcessed}, LikeSync=${likeSyncJobsProcessed}`
+      `📈 Stats: Feed=${feedJobsProcessed}, Notification=${notifJobsProcessed}`
     );
 
     feedJobsProcessed = 0;
     notifJobsProcessed = 0;
-    likeSyncJobsProcessed = 0;
   }, 60000);
 }
 
@@ -121,4 +107,3 @@ process.on("SIGTERM", () => shutdown("SIGTERM"));
 // --------------------------------------------------
 
 console.log("✅ Workers started");
-
